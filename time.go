@@ -35,6 +35,16 @@ func (vt VTime) format(L *lua.LState) int {
 	return 1
 }
 
+func sleepL(L *lua.LState) int {
+	n := L.IsInt(1)
+	if n <= 0 {
+		<-time.After(time.Second)
+	} else {
+		<-time.After(time.Second * time.Duration(n))
+	}
+	return 0
+}
+
 func (vt VTime) Index(L *lua.LState, key string) lua.LValue {
 	tt := time.Time(vt)
 
@@ -51,6 +61,8 @@ func (vt VTime) Index(L *lua.LState, key string) lua.LValue {
 		return lua.S2L(tt.Weekday().String())
 	case "month":
 		return lua.LInt(tt.Month())
+	case "Mon":
+		return lua.S2L(tt.Month().String())
 	case "year":
 		return lua.LInt(tt.Year())
 	case "format":
@@ -63,6 +75,9 @@ func (vt VTime) Index(L *lua.LState, key string) lua.LValue {
 		return lua.LNumber(tt.UnixNano())
 	case "today":
 		return lua.S2L(tt.Format("2006-01-02"))
+	case "sleep":
+		return lua.NewFunction(sleepL)
+
 	default:
 		return lua.LNil
 	}
